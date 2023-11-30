@@ -33,17 +33,10 @@
  * @param {number} limit 
  * @returns {Promise<Pagination>}
  */
-function fetchPokemonList(limit=60) {
-  return new Promise((resolve, reject) => {
-    fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}`)
-    .then(res => {
-      if (res.ok) {
-        return resolve(res.json())
-      } else {
-        reject(res)
-      }
-    })
-  })
+async function fetchPokemonList(limit=60) {
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}`)
+  if (res.ok) return await res.json()
+  throw res
 }
 
 /**
@@ -51,18 +44,10 @@ function fetchPokemonList(limit=60) {
  * @param {number|string} pokemonId 
  * @returns {Promise<Pokemon>}
  */
-function fetchPokemon(pokemonId) {
-  console.log({pokemonId})
-  return new Promise((resolve, reject) => {
-    fetch(typeof pokemonId === 'number' ? `https://pokeapi.co/api/v2/pokemon/${pokemonId}` : pokemonId)
-    .then(res => {
-      if (res.ok) {
-        return resolve(res.json())
-      } else {
-        reject(res)
-      }
-    })
-  })
+async function fetchPokemon(pokemonId) {
+  const res = await fetch(typeof pokemonId === 'number' ? `https://pokeapi.co/api/v2/pokemon/${pokemonId}` : pokemonId)
+ if (res.ok) return await res.json()
+  throw res
 }
 
 /**
@@ -70,29 +55,23 @@ function fetchPokemon(pokemonId) {
  * @param {number|string} speciesId 
  * @returns {Promise<Species>}
  */
-function fetchSpecies(speciesId) {
-  return new Promise((resolve, reject) => {
-    fetch(typeof speciesId === 'number' ? `https://pokeapi.co/api/v2/pokemon-species/${speciesId}` : speciesId)
-    .then(res => {
-      if (res.ok) {
-        return resolve(res.json())
-      } else {
-        reject(res)
-      }
-    })
-  })
+async function fetchSpecies(speciesId) {
+  const res = await fetch(typeof speciesId === 'number' ? `https://pokeapi.co/api/v2/pokemon-species/${speciesId}` : speciesId)
+  if (res.ok) return await res.json()
+  throw res
 }
-
-window.addEventListener('load', () => {
+ 
+window.addEventListener('load', async () => {
   const btnCatch = document.getElementById('btnCatch')
   const pokemonListEle = document.querySelector('.pokemon-list')
   /** @type {ResourceItem[]} */
   let pokemonList = []
 
-  fetchPokemonList()
-  .then(res => {
+  try {
+    const res = await fetchPokemonList()
     pokemonList = res.results
-  })
+  } catch (e) {}
+ 
 
   /**
    * 
@@ -112,22 +91,19 @@ window.addEventListener('load', () => {
     pokemonListEle.appendChild(div)
   }
 
-  btnCatch.addEventListener('click', () => {
+  btnCatch.addEventListener('click', async () => {
     if (pokemonList.length === 0) {
       return
     }
     const randomIdx = Math.floor(Math.random() * (pokemonList.length-1))
-    const pokemon = pokemonList[randomIdx]
+    const pokemonItem = pokemonList[randomIdx]
+    const pokemon = await fetchPokemon(pokemonItem.url)
+    const species = await fetchSpecies(pokemon.species.url)
+    const enEntry = species.flavor_text_entries.find(entry => entry.language.name === 'en')
+    addPokemonToList(pokemon, enEntry.flavor_text)
+    pokemonList.splice(randomIdx, 1)
 
-    fetchPokemon(pokemon.url)
-    .then(pokemon => {
-      fetchSpecies(pokemon.species.url)
-      .then(species => {
-        const enEntry = species.flavor_text_entries.find(entry => entry.language.name === 'en')
-        addPokemonToList(pokemon, enEntry.flavor_text)
-        pokemonList.splice(randomIdx, 1)
-      })
-    })
+    
 
   })
 })

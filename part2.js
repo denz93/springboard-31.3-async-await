@@ -11,17 +11,12 @@
  * @property {boolean} success
  * @returns {Promise<Desk>}
  */
-function fetchDesk() {
-  return new Promise((resolve, reject) => {
-    fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
-    .then(res => {
-      if (res.ok) {
-        return resolve(res.json())
-      } else {
-        reject(res)
-      }
-    })
-  })
+async function fetchDesk() {
+  const res = await fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
+  if (res.ok) {
+    return await res.json()
+  }
+  throw res
 }
 
 /**
@@ -45,22 +40,15 @@ function fetchDesk() {
  * @param {string} deck_id 
  * @returns {Promise<DrawResult>}
  */ 
-function drawCard(deck_id) {
-  return new Promise((resolve, reject) => {
-    fetch(`https://deckofcardsapi.com/api/deck/${deck_id}/draw/?count=1`)
-    .then(res => {
-      if (res.ok) {
-        return resolve(res.json())
-      } else {
-        reject(res)
-      }
-    })
-  })
+async function drawCard(deck_id) {
+  const res = await fetch(`https://deckofcardsapi.com/api/deck/${deck_id}/draw/?count=1`)
+  if (res.ok) return await res.json()
+  throw res
 }
 
 
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
   const btnDraw = document.getElementById('btnDraw')
   const cardPile = document.querySelector('.card-pile')
   let desk_id = null
@@ -94,24 +82,21 @@ window.addEventListener('load', () => {
     cardPile.innerHTML = ''
   }
 
-  function initDesk() {
-    fetchDesk()
-    .then(desk => {
-      desk_id = desk.deck_id
-      isRemaining = desk.remaining > 0
-    })
+  async function initDesk() {
+    const desk = await fetchDesk()
+    desk_id = desk.deck_id
+    isRemaining = desk.remaining > 0
   }
 
   initDesk()
 
-  btnDraw.addEventListener('click', () => {
+  btnDraw.addEventListener('click', async () => {
     if (isRemaining) {
-      drawCard(desk_id)
-      .then(drawResult => {
-        const card = drawResult.cards[0]
-        isRemaining = drawResult.remaining > 0
-        addCardToPile(card)
-      })
+      const drawResult = await drawCard(desk_id)
+      const card = drawResult.cards[0]
+      isRemaining = drawResult.remaining > 0
+      addCardToPile(card)
+
     } else {
       clearPile()
       initDesk()
