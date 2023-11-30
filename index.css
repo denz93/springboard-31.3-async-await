@@ -1,0 +1,41 @@
+.flex {
+  display: flex;
+  gap: 1rem;
+}
+.p-2 {
+  padding: .4rem;
+}
+
+.card-pile {
+  display: flex;
+  justify-items: center;
+  justify-content: center;
+  height: 300px;
+}
+.card {
+  --rotation: 0deg;
+  position: absolute;
+  width: 200px;
+  rotate: var(--rotation);
+  box-shadow: 4px 4px 4px 2px rgba(0, 0, 0, 0.2);
+}
+.card > img {
+  width: 100%;
+  height: 100%;
+}
+
+.pokemon-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.pokemon {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: .3rem .5rem;
+  background-color: azure;
+}
